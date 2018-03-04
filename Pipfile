@@ -12,6 +12,7 @@ numpy = "*"
 "libusb1" = "*"
 matplotlib = "*"
 "pyqt5" = "*"
+pyusb = "*"
 
 
 [dev-packages]
