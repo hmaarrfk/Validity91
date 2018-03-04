@@ -44,6 +44,9 @@ This should install spyder, as well as all the other required dependencies.
 | Find the initialization commands | Ongoing       |
 
 
+# Reverse engineering
+So I provided a single dump using my VirtualBox and Windows10 trying to log on
+
 ## Similar projects
-[Validity90](https://github.com/nmikhailov/Validity90) works on doing this for sensors with encrypted traffic.
-[libfprint](https://www.freedesktop.org/wiki/Software/fprint/libfprint/) did this a while back for many sensors???
+  * [Validity90](https://github.com/nmikhailov/Validity90) works on doing this for sensors with encrypted traffic.
+  * [libfprint](https://www.freedesktop.org/wiki/Software/fprint/libfprint/) did this a while back for many sensors???
