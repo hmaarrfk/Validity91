@@ -1,6 +1,6 @@
 # Validity 91
 
-This project aims at reverse engineering the protocol of the Validity 138a:0091 fingerprint sensor that is found on the XPS 15 9560 and potentially other laptops.
+This project aims at reverse engineering the protocol of the Validity 138a:0091 fingerprint sensor that is found on the XPS 15 9560, XPS 13 9360 and potentially other laptops.
 
 This sensor should be pretty straightforward to reverse engineer since apparently it doesn't encrypt the traffic between the sensor and the OS.
 
@@ -53,6 +53,9 @@ So I am working off a single dump using my VirtualBox and Windows10 trying to lo
 
 Here is a sample from the script from the side of my fingers:
 ![sample](assets/sample_capture.png)
+
+# Chat
+[![Gitter chat](https://badges.gitter.im/Validity91/gitter.png)](https://gitter.im/Validity91/Lobby)
 
 ## Similar projects
   * [Validity90](https://github.com/nmikhailov/Validity90) works on doing this for sensors with encrypted traffic.
