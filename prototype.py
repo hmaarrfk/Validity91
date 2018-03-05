@@ -8,7 +8,8 @@ import usb.util
 import usb.control
 
 import usb
-
+import time
+import matplotlib.pyplot as plt
 
 dev = usb.core.find(idVendor=0x138A, idProduct=0x0091)
 if dev is None:
@@ -40,7 +41,7 @@ interrupt_in = endpoints[3] # Endpoint 0x83. Interrupt IN
 
 bulk_out.write(validity91.message1)
 response1 = bulk_in.read(64)
-assert(response1 == validity91.response1)
+assert(len(response1) == len(validity91.response1))
 
 bulk_out.write(validity91.message2)
 response2 = bulk_in.read(68)
@@ -61,7 +62,7 @@ assert(response5 == validity91.response5)
 
 bulk_out.write(validity91.message6)
 response6 = bulk_in.read(64)
-assert(response6 == validity91.response6)
+assert(len(response6) == len(validity91.response6))
 
 bulk_out.write(validity91.message7)
 response7 = bulk_in.read(64)
@@ -84,51 +85,56 @@ r = interrupt_in.read(8,timeout=0)
 print(r)
 print("You may now remove your finger!")
 # %%
+def capture_finger(bulk_out, bulk_in):
+    for i in range(10000):
+        bulk_out.write(validity91.message_is_image_ready)
+        res = bulk_in.read(64)
+        # res == 0s seems to indicate that data is ready
+        # res == 1, 0, 0, 0, 0 seems to indicate that data isn't ready
 
-img = None
-for i in range(100):
-    bulk_out.write(validity91.message_is_image_ready)
-    res = bulk_in.read(64)
-    # res == 0s seems to indicate that data is ready
-    # res == 1, 0, 0, 0, 0 seems to indicate that data isn't ready
+        if res[0] == 0:
+            print("Data ready")
 
-    if res[0] == 0:
-        print("Data ready")
+            bulk_out.write(validity91.message_read_image_part)
 
-        bulk_out.write(validity91.message_read_image_part)
+            # You can read the data in small chunks
+            img1 = bulk_in.read(4096)
 
-        # You can read the data in small chunks
-        img1 = bulk_in.read(4096)
+            # 6 first bytes are descriptive
+            # They contain the length of the remaining array
+            frame_size = img1[3]*256 + img1[2]
+            if frame_size > len(img1) - 6:
+                img1 = img1 + bulk_in.read(4096)
 
-        # 6 first bytes are descriptive
-        # They contain the length of the remaining array
-        frame_size = img1[3]*256 + img1[2]
-        if frame_size > len(img1) - 6:
-            img1 = img1 + bulk_in.read(4096)
+            # or you can read them all in 1 shot if you know exactly how
+            # many bytes are coming in
+            bulk_out.write(validity91.message_read_image_part)
+            img2 = bulk_in.read(4806)
 
-        # or you can read them all in 1 shot if you know exactly how
-        # many bytes are coming in
-        bulk_out.write(validity91.message_read_image_part)
-        img2 = bulk_in.read(4806)
+            bulk_out.write(validity91.message_read_image_part)
+            img3 = bulk_in.read(4806)
 
-        bulk_out.write(validity91.message_read_image_part)
-        img3 = bulk_in.read(4806)
+            # put the 3 arrays together
+            img = np.array(img1[6:] + img2[6:] + img3[6:])
+            # remove the blanking lines (maybe these mean something important)
+            img = img.reshape(-1, 120)[:, 8:]
+            return img
+        elif res[0] == 1:
+            # print("Data not ready")
+            pass
+        else:
+            print(res)
 
-        # put the 3 arrays together
-        img = np.array(img1[6:] + img2[6:] + img3[6:])
-        # remove the blanking lines (maybe these mean something important)
-        img = img.reshape(-1, 120)[:, 8:]
-        break
-    elif res[0] == 1:
-        print("Data not ready")
-    else:
-        print(res)
+    raise RuntimeError("Could not capture a fingerprint")
 
 
+img = capture_finger(bulk_out, bulk_in)
 
-import matplotlib.pyplot as plt
+# %%
 # plot it if you wish
-plt.imshow(img, vmin=0, vmax=255)
+fig = plt.figure('First capture')
+ax = fig.gca()
+ax.imshow(img, vmin=0, vmax=255)
 #plt.colorbar()
 
 # %%
@@ -150,7 +156,15 @@ assert(repeated_response2 == validity91.repeated_response2)
 
 # %%
 
+
+input("Remove your finger, then press enter to take a second print")
 response8 = None
 bulk_out.write(validity91.message8)
 response8 = bulk_in.read(4096)
 # assert(response8 == validity91.response8)
+
+
+img2 = capture_finger(bulk_out, bulk_in)
+fig = plt.figure('Second capture')
+ax = fig.gca()
+ax.imshow(img2, vmin=0, vmax=255)
