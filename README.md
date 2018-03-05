@@ -38,15 +38,22 @@ This should install spyder, as well as all the other required dependencies.
 
 
 # Roadmap
-| Task                             | Status        |
-|:---------------------------------|:--------------|
-| Find the size of the image       | 112✕112 image |
-| Find the initialization commands | Ongoing       |
-
+| Task                                                       | Status         |
+|:-----------------------------------------------------------|:---------------|
+| Create a script that dumps the output from others' laptops | Not started    |
+| Find the size of the image                                 | 112✕112 image  |
+| Find the initialization commands                           | WOMM           |
+| Find the commands required for putting the sensor to sleep | Ongoing        |
+| Learn how to integrate with libfprint                      | Not started    |
+| Detect when finger is put on                               | WOMM           |
+| Detect when finger is taken off                            | Needs new dump |
 
 # Reverse engineering
-So I provided a single dump using my VirtualBox and Windows10 trying to log on
+So I am working off a single dump using my VirtualBox and Windows10 trying to log on to my computer. Honestly, I don't know how to share the dump without making my fingerprints public on the web.
+
+Here is a sample from the script from the side of my fingers:
+![sample](assets/sample_capture.png)
 
 ## Similar projects
   * [Validity90](https://github.com/nmikhailov/Validity90) works on doing this for sensors with encrypted traffic.
-  * [libfprint](https://www.freedesktop.org/wiki/Software/fprint/libfprint/) did this a while back for many sensors???
+  * [libfprint](https://www.freedesktop.org/wiki/Software/fprint/libfprint/) did this a while back for many sensors. Apparently we need to work toward this
