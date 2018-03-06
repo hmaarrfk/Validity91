@@ -81,6 +81,12 @@ print('Sensor ready, put your finger on')
 int_response2 = interrupt_in.read(8, timeout=0)
 validity91.print_array(int_response2, 'Interrupt 2:', file=file)
 
+# Windows never uses this message.
+# Could 3 be meaningful?
+# the number of parts the image is broken down in?
+int_response3 = interrupt_in.read(8)
+validity91.print_array(int_response3, 'Interrupt 3:', file=file)
+
 img = validity91.read_image(bulk_out, bulk_in)
 
 
