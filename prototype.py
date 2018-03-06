@@ -15,13 +15,11 @@ import usb.control
 
 import usb
 
-from array import array
-
 import time
 
 file = open('dump.txt', 'w')
-#file = None
-
+# file = None
+skip_optional = False
 dev = usb.core.find(idVendor=0x138A, idProduct=0x0091)
 if dev is None:
     raise ValueError('Device not found!')
@@ -48,6 +46,8 @@ assert(dev.ctrl_transfer(usb.util.CTRL_IN | usb.util.CTRL_TYPE_VENDOR |
 """
 time.sleep(0.05)
 for i, message in enumerate(validity91.init_messages):
+    if skip_optional and message.optional:
+        continue
     response = message.send(bulk_out, bulk_in)
     message.print(response, file=file)
     try:
@@ -85,6 +85,8 @@ img = validity91.read_image(bulk_out, bulk_in)
 
 
 for i, message in enumerate(validity91.stop_acquisition):
+    if skip_optional and message.optional:
+        continue
     response = message.send(bulk_out, bulk_in)
     message.print(response, file=file)
     try:
