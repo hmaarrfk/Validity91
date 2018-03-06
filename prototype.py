@@ -7,7 +7,7 @@ Created on Mon Mar  5 17:52:56 2018
 """
 import matplotlib.pyplot as plt
 import numpy as np
-import validity91_2 as validity91
+import validity91
 
 import usb.core
 import usb.util
@@ -60,7 +60,7 @@ for i, message in enumerate(validity91.init_messages):
 i = None
 
 # %%
-
+# You can keep running this section to get new fingerprints
 response = validity91.acquisition_start_message.send(bulk_out, bulk_in)
 validity91.acquisition_start_message.check(response)
 
