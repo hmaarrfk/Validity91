@@ -13,6 +13,7 @@ numpy = "*"
 matplotlib = "*"
 "pyqt5" = "*"
 pyusb = "*"
+dataclasses = "*"
 
 
 [dev-packages]
