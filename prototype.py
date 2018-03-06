@@ -19,11 +19,8 @@ from array import array
 
 import time
 
-np.set_printoptions()
-np.set_printoptions(threshold=np.inf,
-                    formatter={'int_kind': lambda i: f"0x{i:02x}"},
-                    linewidth=5 * 8 + 1)
-
+file = open('dump.txt', 'w')
+#file = None
 
 dev = usb.core.find(idVendor=0x138A, idProduct=0x0091)
 if dev is None:
@@ -51,39 +48,58 @@ assert(dev.ctrl_transfer(usb.util.CTRL_IN | usb.util.CTRL_TYPE_VENDOR |
 """
 time.sleep(0.05)
 for i, message in enumerate(validity91.init_messages):
+    response = message.send(bulk_out, bulk_in)
+    message.print(response, file=file)
     try:
-        response = message.send(bulk_out, bulk_in)
         message.check(response)
     except AssertionError:
-        print(f'Message {i}')
+        if file is not None:
+            file.close()
+        file = None
         raise
+
 i = None
 
 # %%
 # You can keep running this section to get new fingerprints
 response = validity91.acquisition_start_message.send(bulk_out, bulk_in)
-validity91.acquisition_start_message.check(response)
+validity91.acquisition_start_message.print(response, file=file)
+try:
+    validity91.acquisition_start_message.check(response)
+except AssertionError:
+    if file is not None:
+        file.close()
+    file = None
+    raise
+
 
 int_response1 = interrupt_in.read(8)
 assert(int_response1 == validity91.interrupt_ready_response)
-
+validity91.print_array(int_response1, 'Interrupt 1:', file=file)
 
 print('Sensor ready, put your finger on')
 int_response2 = interrupt_in.read(8, timeout=0)
-print(f'Interrupt response 2: length {len(int_response2)}')
-print(np.array(int_response2))
+validity91.print_array(int_response2, 'Interrupt 2:', file=file)
 
 img = validity91.read_image(bulk_out, bulk_in)
 
 
 for i, message in enumerate(validity91.stop_acquisition):
+    response = message.send(bulk_out, bulk_in)
+    message.print(response, file=file)
     try:
-        response = message.send(bulk_out, bulk_in)
         message.check(response)
     except AssertionError:
-        print(f'Message {i}')
+        if file is not None:
+            file.close()
+        file = None
         raise
+
 i = None
+
+if file is not None:
+    file.close()
+    file = None
 
 fig = plt.figure('Your fingerprint')
 ax = fig.gca()
@@ -91,4 +107,6 @@ ax.imshow(img, vmin=0, vmax=255)
 ax.set_title('Your fingerprint')
 ax.set_xlabel('x (pixel)')
 ax.set_ylabel('y (pixel)')
+
+print('')  # matplotlib returns the handle to a text that gets annoying to see.
 # fig.dpi = 200  # set to 200 for high dpi screens

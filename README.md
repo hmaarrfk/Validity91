@@ -40,14 +40,15 @@ This should install spyder, as well as all the other required dependencies.
 # Roadmap
 | Task                                                       | Status         |
 |:-----------------------------------------------------------|:---------------|
-| Create a script that dumps the output from others' laptops | Not started    |
+| Create a script that dumps the output from others' laptops | Done           |
 | Find the size of the image                                 | 112✕112 image  |
 | Find the initialization commands                           | WOMM           |
-| Find the commands required for putting the sensor to sleep | Ongoing        |
+| Find the commands required for putting the sensor to sleep | WOMM           |
 | Learn how to integrate with libfprint                      | Not started    |
 | Detect when finger is put on                               | WOMM           |
 | Detect when finger is taken off                            | Needs new dump |
 
+If it doesn't work for you, please issue a pull request to show me the differences in your dump file.  
 # Reverse engineering
 So I am working off a single dump using my VirtualBox and Windows10 trying to log on to my computer. Honestly, I don't know how to share the dump without making my fingerprints public on the web.
 

@@ -3,6 +3,8 @@ from array import array
 from dataclasses import dataclass
 import numpy as np
 
+import sys
+
 # These messages seem to pop out alot
 success = array('B', [0, 0])
 failure = array('B', [18, 4])
@@ -29,6 +31,23 @@ class Validity_Messages:
             assert(response == self.response)
         else:
             assert(len(response) == len(self.response))
+
+    def print(self, response=None, file=sys.stdout):
+        print_array(self.query, 'Sent:', file=file)
+        if response is None:
+            print_array(response, 'Received:', file=file)
+        else:
+            print_array(self.response, 'Received:', file=file)
+
+def print_array(a, header=None, file=sys.stdout):
+    if file is None:
+        return
+    if header is not None:
+        print(header, file=file)
+    np.set_printoptions(threshold=np.inf,
+                        formatter={'int_kind': lambda i: f"0x{i:02x},"},
+                        linewidth=6 * 8 + 1)
+    print(np.array(a), file=file)
 
 windows_name = 'Synaptics VFS7552'
 
