@@ -50,15 +50,16 @@ This should install spyder, as well as all the other required dependencies.
 
 
 # Helping out
-This code doesn't send anything to the cloud. But, if you want to help develop this, considering sharing the difference in the dump file you receive.
-
-Then, consider sharing the differences in your `dump.txt`. I don't think it contains any personal information. As far as I know, I don't dump the fingerprint data.
+This code doesn't send anything to the cloud. But, if you want to help develop this, considering sharing the difference in your dump file, `dump.txt`.
+I don't think it contains any personal information. As far as I know, I don't dump the fingerprint data.
 
 I think the easiest way is to post a diff on [Pastebin](https://pastebin.com/):
 ```bash
 git diff dump.txt
 ```
 and copy the output.
+
+Let me know if you got a semblance of a fingerprint from the script.
 # Reverse engineering
 So I am working off a single dump using my VirtualBox and Windows10 trying to log on to my computer.
 I'll try to share a new dump file from the enrollment procedure.
