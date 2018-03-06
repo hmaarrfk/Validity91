@@ -45,12 +45,25 @@ This should install spyder, as well as all the other required dependencies.
 | Find the initialization commands                           | WOMM           |
 | Find the commands required for putting the sensor to sleep | WOMM           |
 | Learn how to integrate with libfprint                      | Not started    |
-| Detect when finger is put on                               | WOMM           |
-| Detect when finger is taken off                            | Needs new dump |
+| Detect when finger is on the sensor                        | WOMM           |
+| Detect when finger is taken off  (is it possible?)         | Needs new dump |
 
-If it doesn't work for you, please issue a pull request to show me the differences in your dump file.  
+
+# Helping out
+This code doesn't send anything to the cloud. But, if you want to help develop this, considering sharing the difference in the dump file you receive.
+
+Then, consider sharing the differences in your `dump.txt`. I don't think it contains any personal information. As far as I know, I don't dump the fingerprint data.
+
+I think the easiest way is to post a diff on [Pastebin](https://pastebin.com/):
+```bash
+git diff dump.txt
+```
+and copy the output.
 # Reverse engineering
-So I am working off a single dump using my VirtualBox and Windows10 trying to log on to my computer. Honestly, I don't know how to share the dump without making my fingerprints public on the web.
+So I am working off a single dump using my VirtualBox and Windows10 trying to log on to my computer.
+I'll try to share a new dump file from the enrollment procedure.
+
+That should teach us how to detect when a finger is taken off too. But honestly, I don't know how to do this without making my fingerprints public on the web...
 
 Here is a sample from the script from the side of my fingers:
 ![sample](assets/sample_capture.png)
