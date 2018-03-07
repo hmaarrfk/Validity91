@@ -44,7 +44,7 @@ This should install spyder, as well as all the other required dependencies.
 | Find the size of the image                                 | 112✕112 image  |
 | Find the initialization commands                           | WOMM           |
 | Find the commands required for putting the sensor to sleep | WOMM           |
-| Learn how to integrate with libfprint                      | Not started    |
+| Learn how to integrate with libfprint                      | [Getting there](https://github.com/hmaarrfk/libfprint)    |
 | Detect when finger is on the sensor                        | WOMM           |
 | Detect when finger is taken off  (is it possible?)         | Needs new dump |
 
