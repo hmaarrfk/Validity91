@@ -73,9 +73,16 @@ except AssertionError:
     raise
 
 
+# BUG: This sometimes returns response2 directly if you already had
+# your finger on.
+# I guess we need to check the output
+# 0 0 0 0 0 means device active, no finger, no error
+# response 2 means finger on
+# 3 0 0 0 0 means error? maybe you have to read the data in the buffer
+# it will not respond after 3 0 0 0 0 and wait indefinitely
 int_response1 = interrupt_in.read(8)
-assert(int_response1 == validity91.interrupt_ready_response)
 validity91.print_array(int_response1, 'Interrupt 1:', file=file)
+assert(int_response1 == validity91.interrupt_ready_response)
 
 print('Sensor ready, put your finger on')
 int_response2 = interrupt_in.read(8, timeout=0)
@@ -84,8 +91,8 @@ validity91.print_array(int_response2, 'Interrupt 2:', file=file)
 # Windows never uses this message.
 # Could 3 be meaningful?
 # the number of parts the image is broken down in?
-int_response3 = interrupt_in.read(8)
-validity91.print_array(int_response3, 'Interrupt 3:', file=file)
+#int_response3 = interrupt_in.read(8)
+#validity91.print_array(int_response3, 'Interrupt 3:', file=file)
 
 img = validity91.read_image(bulk_out, bulk_in)
 

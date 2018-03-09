@@ -7,7 +7,22 @@ This sensor should be pretty straightforward to reverse engineer since apparentl
 The main strategy is to use Wireshark and a Windows Guest OS running in VirtualBox to capture all the traffic between a working Windows implementation and the sensor.
 
 # Getting started
-## System dependencies
+
+## Running prototype
+You can use conda if you like, but I provided a `Pipfile` that should make it easy to use [pipenv](https://docs.pipenv.org/).
+### Installing pipenv
+  1. `pkcon install pipsi`
+  2. `pipsi install pipenv`
+
+### Run the script
+Change to the project directory, and run
+  1. `pipenv install`
+  2. `sudo make permissions`
+  3. `pipenv run spyder3`
+  4. Open the `prototype.py` file
+  5. Run it within Spyder
+
+## Wireshark development
   1. Install libusb: `pkcon install libusb-devel`
   3. Install Wireshark: `pkcon install wireshark`
     1. Set it up to capture [USB output](https://wiki.wireshark.org/CaptureSetup/USB)
@@ -24,17 +39,11 @@ Add your user to the `vboxusers` group so you can share the USB devices:
 ```bash
 sudo usermod -a -G vboxusers $USER
 ```
-
-## Python environment.
-You can use conda if you like, but I provided a `Pipfile` that should make it easy to use [pipenv](https://docs.pipenv.org/).
-Change to the project directory, and run
-
-```bash
-pipenv install
+you might need
 ```
-
-This should install spyder, as well as all the other required dependencies.
-
+sudo make wireshark
+```
+to set the correct wireshark permissions for USB sniffing
 
 
 # Roadmap
@@ -74,4 +83,5 @@ Here is a sample from the script from the side of my fingers:
 
 ## Similar projects
   * [Validity90](https://github.com/nmikhailov/Validity90) works on doing this for sensors with encrypted traffic.
+  * [libfprint-vsf0090](https://forums.lenovo.com/t5/Linux-Discussion/Validity-Fingerprint-Reader-Linux/m-p/3987358/highlight/true#M10522) Apparently made a PPA for fprint with the validity 0090 sensor
   * [libfprint](https://www.freedesktop.org/wiki/Software/fprint/libfprint/) did this a while back for many sensors. Apparently we need to work toward this

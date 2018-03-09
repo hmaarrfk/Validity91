@@ -15,7 +15,7 @@ class Validity_Messages:
     query: array
     response: array = success
     exact_response: bool = True
-    read_length: int = 128
+    read_length: int = 64
     optional: bool = False
 
     def send_and_check(self, bulk_out, bulk_in):
@@ -66,14 +66,19 @@ init_messages.append(Validity_Messages(
 init_messages.append(Validity_Messages(
     query=array('B', [0x19]),
     response=array('B', bytes.fromhex('000002002100100100000000000000000000000045e68c4b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')),
+    read_length=128,
     exact_response=False,
     optional=True
 ))
 
+
+# vfs5772_init_00
 init_messages.append(Validity_Messages(
     query=array('B', bytes.fromhex('0602000001c966111bc5ec1d5b4e90a9b2a86e91c547e29f6c16b0fd47d3a85b30fd5b2525134bd25cb28166da8cc980d255382e9603793eff7e45cc138960d4e8c33297954ad1dea2330f2e3d433ecfec589b558526993fe8e9e3455cce597144d3444bd50f01ff62b35bfc46957963a42ec2d480a53c2b8c586ec20078a1ed046d59b51e7c8ae5cd39640378dd2cc6f68cb01175c65caa81c2e4d3dd144a1bf911baeb0aa70bfc57a36ada00d83368deb26dceafc6b4571ecb44b81231d0a3eefd53e00991920d4318cddafc0fc3118871f118346976b2c0004cd581067454da6668d245df39dcdd206b436d61cd8b8edb01c35f0559fed7500f2f643e6f26e2bc84c17a3f0af54ec463ffdd34eb1e7a64b0ebb95fa541dae812f22f6f939bc58924aa1cefaa5e8e4901a4e4e594b58fddbebd010a1b24f70e638b9f59f50f489f97a1c71092fbf8e2d7906e3c35ccedfa78ec858d39bab5c998a1f29d7eaa9beb5daedcb0e0d94d7536526fdefe8a7c6a78cca911f18364072f75f1134ca1b8075f5a067e36a01bf2f33b8c52906c701834c6b91325b6cebf46ce8fc205f459f1767cb9531794a5b052cd0d08429ccd6b36415e0c12ede50c8c1c7671e5b4d5f3981f52357094085ef818db78cef17a7b0d7bb06d3e6637655711d23a2c7d6fc1d350a85578ad93588ce15ce0503870c080358b')),
     optional=True
 ))
+
+# vfs5011_init_01
 init_messages.append(Validity_Messages(
     query=array('B', bytes.fromhex('085c2000800700000004')),
 ))
