@@ -18,6 +18,9 @@ You can use conda if you like, but I provided a `Pipfile` that should make it ea
 Change to the project directory, and run
   1. `pipenv install`
   2. `sudo make permissions`
+  3. `pipenv run python3 prototype.py`
+
+Or you may choose to run it within spyder
   3. `pipenv run spyder3`
   4. Open the `prototype.py` file
   5. Run it within Spyder

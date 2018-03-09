@@ -125,3 +125,4 @@ ax.set_ylabel('y (pixel)')
 
 print('')  # matplotlib returns the handle to a text that gets annoying to see.
 # fig.dpi = 200  # set to 200 for high dpi screens
+plt.show()
