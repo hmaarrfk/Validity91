@@ -5,10 +5,167 @@ import numpy as np
 
 import sys
 
+import usb.core
+import usb.util
+import usb.control
+
+
 # These messages seem to pop out alot
 success = array('B', [0, 0])
 failure = array('B', [18, 4])
 invalid = array('B', [0x01, 0x04])
+
+
+class vfs7552:
+    """Validity 7552 sensor found on XPS 9360 and 9560.
+
+    Example usage:
+    ```
+    f_sensor = validity91.vfs7552()
+    f_sensor.initiate_capture()
+
+    print("Put your finger on.")
+    f_sensor.wait_finger_on()
+    img = f_sensor.capture_image()
+    print("Take your finger off.")
+    f_sensor.wait_finger_off()
+    f_sensor.disable_sensor()
+    ```
+    """
+
+    image_width = 112
+    image_height = 112
+    control_columns = 8
+
+    def __init__(self, *, idVendor=0x138A, idProduct=0x0091):
+        self.skip_optional = False
+
+        self.dev = usb.core.find(idVendor=idVendor, idProduct=idProduct)
+        if self.dev is None:
+            raise ValueError('Device not found!')
+
+        self.dev.reset()
+
+        self.cfg = self.dev.get_active_configuration()
+
+        endpoints = self.cfg[(0, 0)]
+
+        for endpoint in endpoints:
+            endpoint.clear_halt()
+
+        self.bulk_out = endpoints[0]  # Ednpoint 0x01, Direction OUT
+        self.bulk_in = endpoints[1]    # Endpoint 0x81. Direction IN
+
+        self.interrupt_in = endpoints[3]  # Endpoint 0x83. Interrupt IN
+
+        # time.sleep(0.05)
+
+        self._activate()
+
+    def _send_messages(self, messages):
+        for i, message in enumerate(messages):
+            if self.skip_optional and message.optional:
+                continue
+            response = message.send(self.bulk_out, self.bulk_in)
+            message.check(response)
+
+
+
+    def _activate(self):
+        """
+        # is this needed?
+        assert(dev.ctrl_transfer(usb.util.CTRL_IN | usb.util.CTRL_TYPE_VENDOR |
+                             usb.util.CTRL_RECIPIENT_DEVICE, 20, 0, 0, 2) ==
+               validity91.success)
+        """
+        self._send_messages(init_messages)
+
+    def initiate_capture(self):
+        self._send_messages([acquisition_start_message])
+
+    def wait_finger_on(self):
+        int_response = self.interrupt_in.read(8)
+
+        """I've documented 3 responses.
+        I think they mean:
+
+        [0 0 0 0 0 ]: system ready, waiting for finger (returns immediately)
+                      The next reply will be [2 x x x x]
+        [2 X X X X ]: finger on
+        [3 X X X X ]: finger on? [2, X, X, X, X] was already returned.
+
+        Others have reported different results. Maybe they were putting
+        their finger on too fast? Anyway, the driver shouldn't fail.
+        """
+        if int_response == interrupt_ready_response:
+            int_response = self.interrupt_in.read(8, timeout=0)
+        elif int_response[0] == 0x02:
+            return
+        elif int_response[0] == 0x03:
+            print("I really don't understand how you can get this response.")
+            return
+        else:
+            print("Unkown response, passing")
+            return
+
+    def _read_image_part(self, chunk_size=4806):
+        self.bulk_out.write(message_read_image_part.query)
+
+        header_size = 6
+        if chunk_size < header_size:
+            chunk_size = header_size
+        image_part = self.bulk_in.read(chunk_size)
+
+        image_chunk_size = image_part[2] + image_part[3] * 256
+
+        bytes_remaining = image_chunk_size + header_size - len(image_part)
+        # if the chunk_size == 4806, I don't expect this to be needed
+        if bytes_remaining:
+            image_part = image_part + self.bulk_in.read(bytes_remaining)
+
+        # don't return the header
+        return image_part[header_size:]
+
+    def _read_in_image(self):
+        img_part1 = self._read_image_part()
+        img_part2 = self._read_image_part()
+        img_part3 = self._read_image_part()
+
+        img = np.array(img_part1 + img_part2 + img_part3)
+
+        img = img.reshape(self.image_height, self.image_width+self.control_columns)
+
+        img = img[:, self.control_columns:]
+
+        return img
+
+    def capture_image(self, N_tries=None):
+        while True:
+            if N_tries is not None:
+                if N_tries <= 0:
+                    break
+                N_tries = N_tries - 1
+
+            response = is_image_ready.send(self.bulk_out, self.bulk_in)
+
+            if response[:2] == image_ready_response:
+                return self._read_in_image()
+
+    def wait_finger_off(self):
+        while True:
+            response = is_image_ready.send(self.bulk_out, self.bulk_in)
+            if response[:2] == image_ready_response:
+                img = self._read_in_image()
+
+                # Some heuristic I found that detected that the finger
+                # was taken off
+                if img.var() < 10:
+                    return
+            elif response[:2] == image_error_response:
+                return
+
+    def disable_sensor(self):
+        self._send_messages(stop_acquisition)
 
 
 @dataclass
@@ -141,49 +298,3 @@ interrupt_ready_response = array('B', [0, 0, 0, 0, 0])
 image_ready_response = array('B', [0x00, 0x00])
 image_not_ready_response = array('B', [0x01, 0x00])
 image_error_response = array('B', [0x12, 0x04])
-
-
-def read_image_part(bulk_out, bulk_in, chunk_size=4806):
-    bulk_out.write(message_read_image_part.query)
-
-    header_size = 6
-    if chunk_size < header_size:
-        chunk_size = header_size
-    image_part = bulk_in.read(chunk_size)
-
-    image_chunk_size = image_part[2] + image_part[3] * 256
-
-    bytes_remaining = image_chunk_size + header_size - len(image_part)
-    # if the chunk_size == 4806, I don't expect this to be needed
-    if bytes_remaining:
-        image_part = image_part + bulk_in.read(bytes_remaining)
-
-    # don't return the header
-    return image_part[header_size:]
-
-
-def read_image(bulk_out, bulk_in, N_tries=None):
-    while True:
-        if N_tries is not None:
-            if N_tries <= 0:
-                break
-            N_tries = N_tries - 1
-
-        response = is_image_ready.send(bulk_out, bulk_in)
-
-        if response[:2] == image_ready_response:
-            img_part1 = read_image_part(bulk_out, bulk_in)
-            img_part2 = read_image_part(bulk_out, bulk_in)
-            img_part3 = read_image_part(bulk_out, bulk_in)
-
-            img = np.array(img_part1 + img_part2 + img_part3)
-
-            image_width = 112
-            image_height = 112
-            control_columns = 8
-            img = img.reshape(image_height, image_width+control_columns)
-
-            # There are 8 (control?) columns
-            img = img[:, control_columns:]
-
-            return img
