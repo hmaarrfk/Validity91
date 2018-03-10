@@ -91,7 +91,8 @@ class vfs7552:
         I think they mean:
 
         [0 0 0 0 0 ]: system ready, waiting for finger (returns immediately)
-                      The next reply will be [2 x x x x]
+                      The next reply will be [2 x x x x] when the finger goes
+                      on
         [2 X X X X ]: finger on
         [3 X X X X ]: finger on? [2, X, X, X, X] was already returned.
 
@@ -100,15 +101,14 @@ class vfs7552:
         """
         if int_response == interrupt_ready_response:
             int_response = self.interrupt_in.read(8, timeout=0)
-        elif int_response[0] == 0x02:
-            return
-        elif int_response[0] == 0x03:
-            print("I really don't understand how you can get this response.")
-            return
-        else:
-            print("Unkown response, passing")
-            return
 
+        # Yes, not elseif, we need to compare the second response
+        if int_response[0] == 0x02:
+            return
+        else:  # int_response[0] == 0x03:
+            s = array_to_str(int_response)
+            raise("I really don't understand how you can get this response." + s)
+        
     def _read_image_part(self, chunk_size=4806):
         self.bulk_out.write(message_read_image_part.query)
 

@@ -1,10 +1,30 @@
 # Validity 91
 
-This project aims at reverse engineering the protocol of the Validity 138a:0091 fingerprint sensor that is found on the XPS 15 9560, XPS 13 9360 and potentially other laptops.
+This project aims at reverse engineering the protocol of the Validity 138a:0091 fingerprint sensor that is found on the XPS 15 9560, XPS 13 9360 and potentially other laptops. Apart from a few edge cases, this part is done. Yay!
+
+Unfortunately, the matching algorithm used in the previous libfprint driver doesn't work with this sensor.
+They seem to rely on a single high quality image to do the matching, something that is never obtained.
+See this issue for [more details](https://github.com/hmaarrfk/libfprint/issues/4#issuecomment-372041342).
 
 This sensor should be pretty straightforward to reverse engineer since apparently it doesn't encrypt the traffic between the sensor and the OS.
+A big thanks to Nikita Mikhailov, from whom I learned that it is likely just unencrypted traffic.
+They are working on a [similar project](https://github.com/nmikhailov/Validity90) for a sensor that has encryption capabilities
 
-The main strategy is to use Wireshark and a Windows Guest OS running in VirtualBox to capture all the traffic between a working Windows implementation and the sensor.
+Wireshark was used to sniff through traffic sent to and from the USB.
+
+
+# Roadmap
+| Task                                                       | Status                              |
+|:-----------------------------------------------------------|:------------------------------------|
+| Create a script that dumps the output from others' laptops | Done                                |
+| Find the size of the image                                 | 112✕112 image                       |
+| Find the initialization commands                           | WOMM                                |
+| Find the commands required for putting the sensor to sleep | WOMM                                |
+| Learn how to integrate with libfprint                      | [Getting there](https://github.com/hmaarrfk/libfprint) |
+| Detect when finger is on the sensor                        | WOMM                                |
+| Detect when finger is taken off  (is it possible?)         | WOOM                                |
+| Develop a new fingerprint matching algorithm               | [112x112 is too small for the previous one](https://github.com/hmaarrfk/libfprint/issues/4#issuecomment-372041342) |
+
 
 # Getting started
 
@@ -26,6 +46,9 @@ Or you may choose to run it within spyder
   5. Run it within Spyder
 
 ## Wireshark development
+The main strategy is to use Wireshark and a Windows Guest OS running in VirtualBox to capture all the traffic between a working Windows implementation and the sensor.
+I don't really think this is SUPER necessary. I was able to obtain a dump
+of the enrollment process on windows.
   1. Install libusb: `pkcon install libusb-devel`
   3. Install Wireshark: `pkcon install wireshark`
     1. Set it up to capture [USB output](https://wiki.wireshark.org/CaptureSetup/USB)
@@ -46,20 +69,13 @@ you might need
 ```
 sudo make wireshark
 ```
-to set the correct wireshark permissions for USB sniffing
 
+to set the correct wireshark permissions for USB sniffing.
+You might want to use a wireshark filter like:
 
-# Roadmap
-| Task                                                       | Status         |
-|:-----------------------------------------------------------|:---------------|
-| Create a script that dumps the output from others' laptops | Done           |
-| Find the size of the image                                 | 112✕112 image  |
-| Find the initialization commands                           | WOMM           |
-| Find the commands required for putting the sensor to sleep | WOMM           |
-| Learn how to integrate with libfprint                      | [Getting there](https://github.com/hmaarrfk/libfprint)    |
-| Detect when finger is on the sensor                        | WOMM           |
-| Detect when finger is taken off  (is it possible?)         | Needs new dump |
-
+```
+usb.addr == "1.6.0" || usb.addr == "1.6.1" || usb.addr == "1.6.2" || usb.addr == "1.6.3" || usb.addr == "1.6.4"
+```
 
 # Helping out
 This code doesn't send anything to the cloud. But, if you want to help develop this, considering sharing the difference in your dump file, `dump.txt`.
