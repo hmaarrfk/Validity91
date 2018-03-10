@@ -3,12 +3,11 @@ from array import array
 from dataclasses import dataclass
 import numpy as np
 
-import sys
-
 import usb.core
 import usb.util
 import usb.control
 
+import logging
 
 # These messages seem to pop out alot
 success = array('B', [0, 0])
@@ -66,12 +65,12 @@ class vfs7552:
         for i, message in enumerate(messages):
             if self.skip_optional and message.optional:
                 continue
+            logging.debug(f"Sending message {i}.")
             response = message.send(self.bulk_out, self.bulk_in)
             message.check(response)
 
-
-
     def _activate(self):
+
         """
         # is this needed?
         assert(dev.ctrl_transfer(usb.util.CTRL_IN | usb.util.CTRL_TYPE_VENDOR |
@@ -81,9 +80,11 @@ class vfs7552:
         self._send_messages(init_messages)
 
     def initiate_capture(self):
+        logging.info('')
         self._send_messages([acquisition_start_message])
 
     def wait_finger_on(self):
+        logging.info('')
         int_response = self.interrupt_in.read(8)
 
         """I've documented 3 responses.
@@ -140,6 +141,7 @@ class vfs7552:
         return img
 
     def capture_image(self, N_tries=None):
+        logging.info('')
         while True:
             if N_tries is not None:
                 if N_tries <= 0:
@@ -152,6 +154,7 @@ class vfs7552:
                 return self._read_in_image()
 
     def wait_finger_off(self):
+        logging.info('')
         while True:
             response = is_image_ready.send(self.bulk_out, self.bulk_in)
             if response[:2] == image_ready_response:
@@ -165,6 +168,7 @@ class vfs7552:
                 return
 
     def disable_sensor(self):
+        logging.info('')
         self._send_messages(stop_acquisition)
 
 
@@ -184,6 +188,7 @@ class Validity_Messages:
     def send(self, bulk_out, bulk_in):
         bulk_out.write(self.query)
         response = bulk_in.read(self.read_length)
+        self.log(response)
         return response
 
     def check(self, response):
@@ -192,23 +197,23 @@ class Validity_Messages:
         else:
             assert(len(response) == len(self.response))
 
-    def print(self, response=None, file=sys.stdout):
-        print_array(self.query, 'Sent:', file=file)
-        if response is None:
-            print_array(response, 'Received:', file=file)
+    def log(self, response=None):
+        sent_str = array_to_str(self.query)
+        logging.debug("Sent:\n" + sent_str)
+
+        if response is not None:
+            rec_str = array_to_str(response)
+            logging.debug("Received:\n" + rec_str)
         else:
-            print_array(self.response, 'Received:', file=file)
+            rec_str = array_to_str(self.response)
+            logging.debug("Expected reply: \n" + rec_str)
 
 
-def print_array(a, header=None, file=sys.stdout):
-    if file is None:
-        return
-    if header is not None:
-        print(header, file=file)
+def array_to_str(a, header=None):
     np.set_printoptions(threshold=np.inf,
                         formatter={'int_kind': lambda i: f"0x{i:02x},"},
                         linewidth=6 * 8 + 1)
-    print(np.array(a), file=file)
+    return str(np.array(a))
 
 
 windows_name = 'Synaptics VFS7552'
