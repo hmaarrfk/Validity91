@@ -6,7 +6,7 @@ Created on Mon Mar  5 17:52:56 2018
 @author: mark
 """
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy as np  # noqa
 import validity91
 
 import usb.core
@@ -35,7 +35,7 @@ for endpoint in endpoints:
 bulk_out = endpoints[0]  # Ednpoint 0x01, Direction OUT
 bulk_in = endpoints[1]    # Endpoint 0x81. Direction IN
 
-interrupt_in = endpoints[3] # Endpoint 0x83. Interrupt IN
+interrupt_in = endpoints[3]  # Endpoint 0x83. Interrupt IN
 
 # %%
 """
@@ -91,8 +91,8 @@ validity91.print_array(int_response2, 'Interrupt 2:', file=file)
 # Windows never uses this message.
 # Could 3 be meaningful?
 # the number of parts the image is broken down in?
-#int_response3 = interrupt_in.read(8)
-#validity91.print_array(int_response3, 'Interrupt 3:', file=file)
+# int_response3 = interrupt_in.read(8)
+# validity91.print_array(int_response3, 'Interrupt 3:', file=file)
 
 img = validity91.read_image(bulk_out, bulk_in)
 
