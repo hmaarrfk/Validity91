@@ -10,7 +10,7 @@ import validity91
 import logging
 logging.basicConfig(
     filename='dump.txt',
-    format='%(levelname)s: %(filename)s:%(lineno)s - %(funcName)20s \n%(message)s',
+    format='%(levelname)s: %(filename)s - %(funcName)s \n%(message)s',
     level=logging.DEBUG, filemode='w')
 
 f_sensor = validity91.vfs7552()

@@ -66,7 +66,7 @@ class vfs7552:
             if self.skip_optional and message.optional:
                 continue
             logging.debug(f"Sending message {i}.")
-            response = message.send(self.bulk_out, self.bulk_in)
+            response = self._ask(message)
             message.check(response)
 
     def _activate(self):
@@ -85,7 +85,7 @@ class vfs7552:
 
     def wait_finger_on(self):
         logging.info('')
-        int_response = self.interrupt_in.read(8)
+        int_response = self._read_interrupt()
 
         """I've documented 3 responses.
         I think they mean:
@@ -100,7 +100,7 @@ class vfs7552:
         their finger on too fast? Anyway, the driver shouldn't fail.
         """
         if int_response == interrupt_ready_response:
-            int_response = self.interrupt_in.read(8, timeout=0)
+            int_response = self._read_interrupt(timeout=0)
 
         # Yes, not elseif, we need to compare the second response
         if int_response[0] == 0x02:
@@ -108,26 +108,32 @@ class vfs7552:
         else:  # int_response[0] == 0x03:
             s = array_to_str(int_response)
             raise("I really don't understand how you can get this response." + s)
-        
+
     def _read_image_part(self, chunk_size=4806):
-        self.bulk_out.write(message_read_image_part.query)
+        self._send(message_read_image_part)
 
         header_size = 6
         if chunk_size < header_size:
             chunk_size = header_size
-        image_part = self.bulk_in.read(chunk_size)
+        image_part = self._read(chunk_size)
 
         image_chunk_size = image_part[2] + image_part[3] * 256
 
         bytes_remaining = image_chunk_size + header_size - len(image_part)
         # if the chunk_size == 4806, I don't expect this to be needed
         if bytes_remaining:
-            image_part = image_part + self.bulk_in.read(bytes_remaining)
+            image_part = image_part + self._read(bytes_remaining)
 
         # don't return the header
         return image_part[header_size:]
 
     def _read_in_image(self):
+        previous_log = logging.getLogger()
+        previous_level = previous_log.level
+        logging.debug('Reading images, turning off DEBUG logs')
+        if previous_level  <= logging.DEBUG:
+            logging.getLogger().setLevel(logging.INFO)
+
         img_part1 = self._read_image_part()
         img_part2 = self._read_image_part()
         img_part3 = self._read_image_part()
@@ -138,38 +144,79 @@ class vfs7552:
 
         img = img[:, self.control_columns:]
 
+        logging.getLogger().setLevel(previous_level)
+        logging.debug('Returned to previous log level')
         return img
 
     def capture_image(self, N_tries=None):
         logging.info('')
+        previous_log = logging.getLogger()
+        previous_level = previous_log.level
         while True:
             if N_tries is not None:
                 if N_tries <= 0:
                     break
                 N_tries = N_tries - 1
 
-            response = is_image_ready.send(self.bulk_out, self.bulk_in)
+            response = self._ask(is_image_ready)
+             # Don't want too many logging messages
+            logging.debug('Turning off DEBUG logs')
+            if previous_level  <= logging.DEBUG:
+                logging.getLogger().setLevel(logging.INFO)
 
             if response[:2] == image_ready_response:
+                logging.getLogger().setLevel(previous_level)
+                logging.debug("Last received:\n" + array_to_str(response))
                 return self._read_in_image()
 
     def wait_finger_off(self):
         logging.info('')
+        previous_log = logging.getLogger()
+        previous_level = previous_log.level
         while True:
-            response = is_image_ready.send(self.bulk_out, self.bulk_in)
+            response = self._ask(is_image_ready)
+
+            # Don't want too many logging messages
+            logging.debug('Turning off DEBUG logs')
+            if previous_level  <= logging.DEBUG:
+                logging.getLogger().setLevel(logging.INFO)
+
             if response[:2] == image_ready_response:
                 img = self._read_in_image()
 
                 # Some heuristic I found that detected that the finger
                 # was taken off
                 if img.var() < 10:
-                    return
+                    break
             elif response[:2] == image_error_response:
-                return
+                break
+
+        logging.getLogger().setLevel(previous_level)
+        logging.debug("Last received:\n" + array_to_str(response))
 
     def disable_sensor(self):
         logging.info('')
         self._send_messages(stop_acquisition)
+
+    def _ask(self, message, read_length=None):
+        self._send(message)
+        if read_length is None:
+            read_length = message.read_length
+        return self._read(read_length)
+
+    def _send(self, message):
+        self.bulk_out.write(message.query)
+        logging.debug("Sent:\n" + array_to_str(message.query))
+
+    def _read(self, read_length):
+        response = self.bulk_in.read(read_length)
+        logging.debug("Received:\n" + array_to_str(response))
+        return response
+
+    def _read_interrupt(self, read_length=8, timeout=1000):
+        response = self.interrupt_in.read(read_length, timeout=timeout)
+        logging.debug("Received Interrupt:\n" + array_to_str(response))
+        return response
 
 
 @dataclass
@@ -180,33 +227,11 @@ class Validity_Messages:
     read_length: int = 64
     optional: bool = False
 
-    def send_and_check(self, bulk_out, bulk_in):
-        response = self.send(bulk_out, bulk_in)
-        self.check(response)
-        return response
-
-    def send(self, bulk_out, bulk_in):
-        bulk_out.write(self.query)
-        response = bulk_in.read(self.read_length)
-        self.log(response)
-        return response
-
     def check(self, response):
         if self.exact_response is True:
             assert(response == self.response)
         else:
             assert(len(response) == len(self.response))
-
-    def log(self, response=None):
-        sent_str = array_to_str(self.query)
-        logging.debug("Sent:\n" + sent_str)
-
-        if response is not None:
-            rec_str = array_to_str(response)
-            logging.debug("Received:\n" + rec_str)
-        else:
-            rec_str = array_to_str(self.response)
-            logging.debug("Expected reply: \n" + rec_str)
 
 
 def array_to_str(a, header=None):
