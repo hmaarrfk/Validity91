@@ -70,7 +70,6 @@ class vfs7552:
             message.check(response)
 
     def _activate(self):
-
         """
         # is this needed?
         assert(dev.ctrl_transfer(usb.util.CTRL_IN | usb.util.CTRL_TYPE_VENDOR |
@@ -131,7 +130,7 @@ class vfs7552:
         previous_log = logging.getLogger()
         previous_level = previous_log.level
         logging.debug('Reading images, turning off DEBUG logs')
-        if previous_level  <= logging.DEBUG:
+        if previous_level <= logging.DEBUG:
             logging.getLogger().setLevel(logging.INFO)
 
         img_part1 = self._read_image_part()
@@ -159,9 +158,9 @@ class vfs7552:
                 N_tries = N_tries - 1
 
             response = self._ask(is_image_ready)
-             # Don't want too many logging messages
+            # Don't want too many logging messages
             logging.debug('Turning off DEBUG logs')
-            if previous_level  <= logging.DEBUG:
+            if previous_level <= logging.DEBUG:
                 logging.getLogger().setLevel(logging.INFO)
 
             if response[:2] == image_ready_response:
@@ -178,7 +177,7 @@ class vfs7552:
 
             # Don't want too many logging messages
             logging.debug('Turning off DEBUG logs')
-            if previous_level  <= logging.DEBUG:
+            if previous_level <= logging.DEBUG:
                 logging.getLogger().setLevel(logging.INFO)
 
             if response[:2] == image_ready_response:
@@ -311,10 +310,10 @@ stop_acquisition.append(Validity_Messages(
 
 is_image_ready = Validity_Messages(
     query=array('B', bytes.fromhex('7800000000')),
-    )
+)
 message_read_image_part = Validity_Messages(
     query=array('B', bytes.fromhex('78c0120000'))
-    )
+)
 
 
 interrupt_ready_response = array('B', [0, 0, 0, 0, 0])
