@@ -1,13 +1,12 @@
 
+import logging
 from array import array
-from dataclasses import dataclass
-import numpy as np
 
+import numpy as np
+import usb.control
 import usb.core
 import usb.util
-import usb.control
-
-import logging
+from dataclasses import dataclass
 
 # These messages seem to pop out alot
 success = array('B', [0, 0])
@@ -35,6 +34,23 @@ class vfs7552:
     image_width = 112
     image_height = 112
     control_columns = 8
+
+    # Mark: Personally, when my finger isn't present, the variance of the image is very close to
+    #       0. Single digits. My threshold would be 3.3.
+    # I had originally set it to this, but then many people complained that it would return
+    # almost immediately.
+    # @dreamwavedev found:
+    # Also, the check for img.var() being less than 10 I think was causing some issues as that
+    # almost never ends up being the case, at least not with my sensor. It's almost always in the
+    # mid 100s or 200s, and gets to the 700s when a finger is present.
+    #
+    # Mark:
+    # setting the threshold to 600 is fine for a full fingerprint. But I think we can do with
+    # partial prints. Therefore, I set the threshold to 300.
+    # Because we are looking at the images, I think std makes more sense.
+    # It is located in 3 lines of code.
+
+    finger_detection_threshold = 300
 
     def __init__(self, *, idVendor=0x138A, idProduct=0x0091):
         self.skip_optional = False
@@ -139,7 +155,8 @@ class vfs7552:
 
         img = np.array(img_part1 + img_part2 + img_part3)
 
-        img = img.reshape(self.image_height, self.image_width+self.control_columns)
+        img = img.reshape(self.image_height,
+                          self.image_width + self.control_columns)
 
         img = img[:, self.control_columns:]
 
@@ -147,14 +164,14 @@ class vfs7552:
         logging.debug('Returned to previous log level')
         return img
 
-    def capture_image(self, N_tries=None):
+    def capture_image(self, N_tries=None, actual_finger=True):
         logging.info('')
         previous_log = logging.getLogger()
         previous_level = previous_log.level
         while True:
             if N_tries is not None:
-                if N_tries <= 0:
-                    break
+                if N_tries == 0:
+                    raise RuntimeError("Finger not found")
                 N_tries = N_tries - 1
 
             response = self._ask(is_image_ready)
@@ -166,7 +183,13 @@ class vfs7552:
             if response[:2] == image_ready_response:
                 logging.getLogger().setLevel(previous_level)
                 logging.debug("Last received:\n" + array_to_str(response))
-                return self._read_in_image()
+                img = self._read_in_image()
+                if (actual_finger and
+                        img.var() < self.finger_detection_threshold):
+                    continue
+                else:
+                    logging.info(f"Return image var={img.var()}")
+                    return img
 
     def wait_finger_off(self):
         logging.info('')
@@ -185,9 +208,11 @@ class vfs7552:
 
                 # Some heuristic I found that detected that the finger
                 # was taken off
-                if img.var() < 10:
+                if img.var() < self.finger_detection_threshold:
+                    logging.info(f'Stopped because var={img.var()}')
                     break
             elif response[:2] == image_error_response:
+                logging.info('Stopped because received image error response')
                 break
 
         logging.getLogger().setLevel(previous_level)

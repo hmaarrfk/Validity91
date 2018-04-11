@@ -5,9 +5,11 @@ Created on Mon Mar  5 17:52:56 2018
 
 @author: mark
 """
+import logging
+
 import matplotlib.pyplot as plt
 import validity91
-import logging
+
 logging.basicConfig(
     filename='dump.txt',
     format='%(levelname)s: %(filename)s - %(funcName)s \n%(message)s',
