@@ -29,7 +29,8 @@ Wireshark was used to sniff through traffic sent to and from the USB.
 # Getting started
 
 ## Running prototype
-You can use conda if you like, but I provided a `Pipfile` that should make it easy to use [pipenv](https://docs.pipenv.org/).
+You can use ~~conda~~ (not until 3.7 comes out because i decided to use `dataclasses`)
+ if you like, but I provided a `Pipfile` that should make it easy to use [pipenv](https://docs.pipenv.org/).
 ### Installing pipenv
   1. `pkcon install pipsi`
   2. `pipsi install pipenv`
