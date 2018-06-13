@@ -58,7 +58,7 @@ of the enrollment process on windows.
   4. Install VirtualBox: `pkcon install VirtualBox`
   5. Install [VirtualBox Extension Pack](https://www.virtualbox.org/wiki/Downloads)
   6. Allow VirtualBox to run off your [existing Windows partition](https://www.serverwatch.com/server-tutorials/using-a-physical-hard-drive-with-a-virtualbox-vm.html)
-    * Warning, I kinda got activation warnings from Microsoft. I think they might be related to doing this. It might be more prudent to have a seperate virtual drive running an unactivated version of Windows 10 but I just don't have the hard drive space for it.
+    * Warning, I kinda got activation warnings from Microsoft. I think they might be related to doing this. It might be more prudent to have a separate virtual drive running an unactivated version of Windows 10 but I just don't have the hard drive space for it.
   7. Run Windows10, and capture the fingerprint output.
 
 Add your user to the `vboxusers` group so you can share the USB devices:
