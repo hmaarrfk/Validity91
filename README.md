@@ -1,6 +1,6 @@
 # Validity 91
 
-This project aims at reverse engineering the protocol of the Validity 138a:0091 fingerprint sensor that is found on the XPS 15 9560, XPS 13 9360 and potentially other laptops. Apart from a few edge cases, this part is done. Yay!
+This project aims at reverse engineering the protocol of the Validity 138a:0091 fingerprint sensor that is found on the XPS 15 9560, XPS 13 9360 and potentially other laptops. Apart from a few edge cases, this part is done. Yay! The reverse engineering the sensor for the XPS 15 9570 is out of scope but being done in a different [repository](https://github.com/IDerr/Goodix92).
 
 Unfortunately, the matching algorithm used in the previous libfprint driver doesn't work with this sensor.
 They seem to rely on a single high quality image to do the matching, something that is never obtained.
