@@ -135,6 +135,8 @@ class vfs7552:
         image_chunk_size = image_part[2] + image_part[3] * 256
 
         bytes_remaining = image_chunk_size + header_size - len(image_part)
+        # Images are typically returned in 3 chunks
+        #  4806, 4806, and 3846
         # if the chunk_size == 4806, I don't expect this to be needed
         if bytes_remaining:
             image_part = image_part + self._read(bytes_remaining)

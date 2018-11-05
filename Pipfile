@@ -9,7 +9,6 @@ name = "pypi"
 
 spyder = "*"
 numpy = "*"
-"libusb1" = "*"
 matplotlib = "*"
 "pyqt5" = "*"
 pyusb = "*"
