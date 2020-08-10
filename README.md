@@ -103,5 +103,5 @@ Here is a sample from the script from the side of my fingers:
 
 ## Similar projects
   * [Validity90](https://github.com/nmikhailov/Validity90) works on doing this for sensors with encrypted traffic.
-  * [libfprint-vsf0090](https://forums.lenovo.com/t5/Linux-Discussion/Validity-Fingerprint-Reader-Linux/m-p/3987358/highlight/true#M10522) Apparently made a PPA for fprint with the validity 0090 sensor
+  * [libfprint-vsf0090](https://forums.lenovo.com/t5/Other-Linux-Discussions/Validity-Fingerprint-Reader-Linux/m-p/3352145) Apparently made a PPA for fprint with the validity 0090 sensor
   * [libfprint](https://www.freedesktop.org/wiki/Software/fprint/libfprint/) did this a while back for many sensors. Apparently we need to work toward this
